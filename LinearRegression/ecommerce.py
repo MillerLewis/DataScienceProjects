@@ -31,20 +31,20 @@ customers = pd.read_csv("Ecommerce Customers")
 
 # ====  TRAINING AND TESTING
 # == LINEAR REGRESSION
-# Clean
+# CLEAN
 clean_customers = customers.drop("Email", axis=1).drop("Address", axis=1).drop("Avatar", axis=1)
 X = clean_customers.drop("Yearly Amount Spent", axis=1)
 y = clean_customers["Yearly Amount Spent"]
-# Split
+# SPLIT
 X_train, X_test, y_train, y_test = sklearn.model_selection.train_test_split(X, y, test_size=0.3, random_state=101)
-# Fit
+# FIT
 ecomm_lm = LinearRegression()
 ecomm_lm.fit(X_train, y_train)
 coef_df = pd.DataFrame(ecomm_lm.coef_, X_test.columns, columns=["Coefficients"])  # Should definitely focus more on app and retaining customers
 print(coef_df)
 pred = ecomm_lm.predict(X_test)
 # sns.scatterplot(x=y_test, y=pred)  # Shows a good prediction
-# Metrics
+# METRICS
 mae = metrics.mean_absolute_error(y_test, pred)
 mse = metrics.mean_squared_error(y_test, pred)
 rmse = mse ** 0.5
