@@ -5,6 +5,7 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.neighbors import KNeighborsClassifier
+from sklearn.preprocessing import StandardScaler
 from sklearn import metrics
 import matplotlib.pyplot as plt
 import seaborn as sns
@@ -81,17 +82,31 @@ print(metrics.classification_report(y_test, dec_tree_preds))  # Precision is mor
 
 # == KNN
 # FIT
-# All of the KNNs seem terrible
-recalls = []
-for k in range(1, len(y_train)):
-    print(f"{k} Nearest Neighbours")
-    knn = KNeighborsClassifier(n_neighbors=k)
-    knn.fit(X_train, y_train)
+scaler = StandardScaler(with_mean=True, with_std=True, copy=True)
+scaler.fit(X)
+scaled_cleaned_ad_data = scaler.transform(X)
+scaled_X_train, scaled_X_test, scaled_y_train, scaled_y_test = sklearn.model_selection.train_test_split(scaled_cleaned_ad_data, y, test_size=0.3, random_state=101)
 
-    # PREDICT
-    knn_preds = knn.predict(X_test)
+# KNN seems good at around 20-40 neighbours and better than logistic regression still. In fact it's best for reporting whether an ad was clicked or not
+# recalls = []
+# for k in range(1, len(y_train)):
+#     print(f"{k} Nearest Neighbours")
+#     knn = KNeighborsClassifier(n_neighbors=k)
+#     knn.fit(scaled_X_train, scaled_y_train)
+#
+#     # PREDICT
+#     knn_preds = knn.predict(scaled_X_test)
+#
+#     # METRICS
+#     recalls.append(metrics.recall_score(scaled_y_test, knn_preds))
+# plt.plot(list(range(len(recalls))), recalls)
+# plt.show(block=True)
+knn = KNeighborsClassifier(n_neighbors=25)
+knn.fit(scaled_X_train, scaled_y_train)
 
-    # METRICS
-    recalls.append(metrics.recall_score(y_test, knn_preds))
-plt.plot(list(range(1, len(y_train))), recalls)
-plt.show()
+# PREDICT
+knn_preds = knn.predict(scaled_X_test)
+
+# METRICS
+print("KNN")
+print(metrics.classification_report(scaled_y_test, knn_preds))
