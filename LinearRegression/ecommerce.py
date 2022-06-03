@@ -32,7 +32,7 @@ customers = pd.read_csv("Ecommerce Customers")
 # ====  TRAINING AND TESTING
 # == LINEAR REGRESSION
 # CLEAN
-clean_customers = customers.drop("Email", axis=1).drop("Address", axis=1).drop("Avatar", axis=1)
+clean_customers = customers.drop(["Email", "Address", "Avatar"], axis=1)
 X = clean_customers.drop("Yearly Amount Spent", axis=1)
 y = clean_customers["Yearly Amount Spent"]
 # SPLIT
