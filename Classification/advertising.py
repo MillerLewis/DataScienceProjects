@@ -44,12 +44,14 @@ X_train, X_test, y_train, y_test = sklearn.model_selection.train_test_split(X, y
 # FIT
 logm = LogisticRegression()
 logm.fit(X_train, y_train)
+logm_coef_df = pd.DataFrame(data=logm.coef_.transpose(), index=X_train.columns, columns=["Coefficients"])
 
 # PREDICT
 log_preds = logm.predict(X_test)
 
 # METRICS
 print("Logistic Model")
+print(f"Coefficients:\n{logm_coef_df}")
 print(metrics.classification_report(y_test, log_preds))  # Precision is more likely to be a good indicator than recall. And macro avg of precision is 0.93, which seems pretty good
 
 # == RANDOM FOREST
@@ -85,9 +87,9 @@ scaler.fit(X)
 scaled_cleaned_ad_data = scaler.transform(X)
 scaled_X_train, scaled_X_test, scaled_y_train, scaled_y_test = sklearn.model_selection.train_test_split(scaled_cleaned_ad_data, y, test_size=0.3, random_state=101)
 
-# KNN seems good at around 20-40 neighbours and better than logistic regression still. In fact it's best for reporting whether an ad was clicked or not
+# KNN seems good at around 8-45 neighbours and better than logistic regression still. In fact it's best for reporting whether an ad was clicked or not (precision)
 # recalls = []
-# for k in range(1, len(y_train)):
+# for k in range(1, len(y_test)):
 #     print(f"{k} Nearest Neighbours")
 #     knn = KNeighborsClassifier(n_neighbors=k)
 #     knn.fit(scaled_X_train, scaled_y_train)
