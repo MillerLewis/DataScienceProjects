@@ -1,4 +1,3 @@
-import numpy as np
 import pandas as pd
 import sklearn.model_selection
 from sklearn.linear_model import LogisticRegression
@@ -9,7 +8,6 @@ from sklearn.preprocessing import StandardScaler
 from sklearn import metrics
 import matplotlib.pyplot as plt
 import seaborn as sns
-from scipy import stats
 
 pd.set_option("display.max_rows", None)
 pd.set_option("display.max_columns", None)
