@@ -5,6 +5,8 @@ from sklearn.tree import DecisionTreeClassifier
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.preprocessing import StandardScaler
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.model_selection import GridSearchCV
 from sklearn import metrics
 import matplotlib.pyplot as plt
 import seaborn as sns
@@ -32,8 +34,16 @@ print(ad_data.info())
 # plt.show(block=True)
 
 # === TRAINING AND TESTING
+# Let's try to use TFIDF on the ad topic line with NLP
+# If we include Country, City, and Ad Topic Line with TFID, then logistic model becomes pretty good (0.97 precision).
+# However, extra hyper param tuning had to be performed for KNN and Random Forest
+tfid_vec = TfidfVectorizer()
+tfid_topic_line = tfid_vec.fit_transform(ad_data["Ad Topic Line"])
+ad_data = pd.concat([ad_data, pd.DataFrame(tfid_vec.fit_transform(ad_data["Ad Topic Line"]).toarray(), columns=tfid_vec.get_feature_names_out())], axis=1)
 # CLEAN
-cleaned_ad_data = ad_data.drop(["Ad Topic Line", "City", "Country", "Timestamp"], axis=1)  # Feel like adding some way to include at least the Ad Topic Line would improve scoring
+# cleaned_ad_data = ad_data.drop(["Ad Topic Line", "Country", "City", "Timestamp"], axis=1)  # Feel like adding some way to include at least the Ad Topic Line would improve scoring
+cleaned_ad_data = ad_data.drop(["Ad Topic Line", "Timestamp"], axis=1)  # Feel like adding some way to include at least the Ad Topic Line would improve scoring
+cleaned_ad_data = pd.get_dummies(cleaned_ad_data, columns=["City", "Country"], drop_first=True)
 
 # SPLIT
 X = cleaned_ad_data.drop("Clicked on Ad", axis=1)
@@ -42,7 +52,7 @@ X_train, X_test, y_train, y_test = sklearn.model_selection.train_test_split(X, y
 
 # == LOGISTIC REGRESSION
 # FIT
-logm = LogisticRegression()
+logm = LogisticRegression(max_iter=1000)
 logm.fit(X_train, y_train)
 logm_coef_df = pd.DataFrame(data=logm.coef_.transpose(), index=X_train.columns, columns=["Coefficients"])
 
@@ -56,8 +66,11 @@ print(metrics.classification_report(y_test, log_preds))  # Precision is more lik
 
 # == RANDOM FOREST
 # FIT
-rand_forest = RandomForestClassifier()
-rand_forest.fit(X_train, y_train)
+rand_forest_search = GridSearchCV(RandomForestClassifier(), {"n_estimators": [100, 500, 1000]}, verbose=2)
+rand_forest_search.fit(X_train, y_train)
+rand_forest = rand_forest_search.best_estimator_
+# rand_forest = RandomForestClassifier()
+# rand_forest.fit(X_train, y_train)
 
 # PREDICT
 rand_forest_preds = rand_forest.predict(X_test)
@@ -101,8 +114,11 @@ scaled_X_train, scaled_X_test, scaled_y_train, scaled_y_test = sklearn.model_sel
 #     recalls.append(metrics.recall_score(scaled_y_test, knn_preds))
 # plt.plot(list(range(len(recalls))), recalls)
 # plt.show(block=True)
-knn = KNeighborsClassifier(n_neighbors=25)
-knn.fit(scaled_X_train, scaled_y_train)
+knn_search = GridSearchCV(KNeighborsClassifier(), {"n_neighbors": [i for i in range(1, 150)]}, verbose=2)
+knn_search.fit(scaled_X_train, scaled_y_train)
+knn = knn_search.best_estimator_
+# knn = KNeighborsClassifier(n_neighbors=25)
+# knn.fit(scaled_X_train, scaled_y_train)
 
 # PREDICT
 knn_preds = knn.predict(scaled_X_test)
